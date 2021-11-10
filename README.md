@@ -6,6 +6,6 @@ Currently this runs on an endless gameloop.
 ### A Gif depiction
 ![Air Hockey GIF](https://github.com/Jacob-Lillywhite/AirHockey/blob/master/Screenshots/AirHockey.gif)
 ---
-### Future Improvements
-- First to 10 points Victory Condition.
-- Simple AI controlled paddle
+### Future Improvements: 
+- [ ] First to 10 points Victory Condition.
+- [ ]Simple AI controlled paddle
