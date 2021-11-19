@@ -14,6 +14,6 @@ Currently this works by drawing on top of a JPanel that sits on a JFrame. The ga
 - [ ] Clean Up code
 ---
 - [ ] Possibly Change how the Paddle collision works for TOP and BOTTOM hits ?
-I fixed the TOP and BOTTOM collisions from having the ball get stuck inside the paddle and sometimes cause a player to score on themselves
+- I fixed the TOP and BOTTOM collisions from having the ball get stuck inside the paddle and sometimes cause a player to score on themselves
 by forcing the ball outside of the paddle. This makes it so if you hit the ball with the top or bottom of the paddle it acts as a horizontal hit.
 Potentially I might want to change this to a vertical hit as that's what it really is.
