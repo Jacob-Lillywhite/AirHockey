@@ -7,6 +7,8 @@ public class Ball extends Rectangle {
     int xVelocity;
     int yVelocity;
     int initialSpeed =2;
+    int centerY;
+    static final int MAX_VELOCITY = 10;
 
     Ball(int x, int y, int width, int height){
         super(x, y, width, height);
@@ -36,8 +38,15 @@ public class Ball extends Rectangle {
         xVelocity = xDir;
     }
     public void move(){
+        if(xVelocity > MAX_VELOCITY){
+            xVelocity = MAX_VELOCITY;
+        }
+        if(yVelocity > MAX_VELOCITY){
+            yVelocity = MAX_VELOCITY;
+        }
         x += xVelocity;
         y += yVelocity;
+        centerY = (y+height/2);
     }
     public void draw(Graphics graphics){
         graphics.setColor(Color.red);

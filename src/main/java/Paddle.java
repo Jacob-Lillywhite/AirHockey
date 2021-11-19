@@ -5,6 +5,7 @@ public class Paddle extends Rectangle {
     private final int id;
     private static final int speed = 10;
     private int yVelocity;
+    private int centerY;
 
     Paddle(int x, int y, int width, int height, int id){
     super(x,y,width,height);
@@ -16,7 +17,31 @@ public class Paddle extends Rectangle {
     }
 
     public void move(){
-        y += yVelocity;
+            y += yVelocity;
+            centerY = y+(height/2);
+    }
+
+    public void move(Ball ball){
+        // While the paddle is not at the right height
+        // We'll move it to match the ball height
+        centerY = y+(height/2);
+        int ballDist = ball.centerY - centerY;
+        if(ball.centerY != centerY){
+            int MAX_COM_PADDLE_SPEED = 8;
+            if(ball.centerY > centerY){
+              for(int i = MAX_COM_PADDLE_SPEED; i > 0; i--){
+                  if(ballDist % i == 0){
+                      y += i;
+                  }
+              }
+           } else{
+                for(int i = MAX_COM_PADDLE_SPEED; i > 0; i--){
+                    if(ballDist % i == 0){
+                        y -= i;
+                    }
+                }
+           }
+        }
     }
     public void draw(Graphics graphics){
         if(id==1){

@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.Random;
 
 public class GamePanel extends JPanel implements Runnable {
@@ -9,6 +10,8 @@ public class GamePanel extends JPanel implements Runnable {
     static final int BALL_DIAMETER = 50;
     static final int PADDLE_HEIGHT = 100;
     static final int PADDLE_WIDTH = 15;
+    static final int COM_REACTION_DIST = 150;
+    public boolean running;
     Thread gameThread;
     Image image;
     Graphics graphics;
@@ -17,7 +20,6 @@ public class GamePanel extends JPanel implements Runnable {
     Paddle comPaddle;
     Ball ball;
     Score score;
-
 
     GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -29,8 +31,16 @@ public class GamePanel extends JPanel implements Runnable {
         score = new Score(SCREEN_WIDTH, SCREEN_HEIGHT);
         gameThread = new Thread(this);
         gameThread.start();
+        running = true;
     }
-
+    public void reset(){
+        newPaddles();
+        newBall();
+        score = new Score(SCREEN_WIDTH, SCREEN_HEIGHT);
+        gameThread = new Thread(this);
+        gameThread.start();
+        running = true;
+    }
     private void newPaddles() {
         playerPaddle = new Paddle(SCREEN_WIDTH - PADDLE_WIDTH, SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT, 1);
         comPaddle = new Paddle(0, SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT, 2);
@@ -78,7 +88,8 @@ public class GamePanel extends JPanel implements Runnable {
         comPaddle.draw(graphics);
         ball.draw(graphics);
         score.draw(graphics);
-
+        // Because the checkWinner method needs @graphics to draw we call it here.
+        running = score.checkWinner(graphics);
     }
 
     public void checkCollisions() {
@@ -98,15 +109,18 @@ public class GamePanel extends JPanel implements Runnable {
         //endregion
         //region Ball Border Collisions
         if (ball.y <= 0) {
+            ball.y = 1;
             ball.setYDir(-ball.yVelocity);
         }
         if (ball.y >= SCREEN_HEIGHT - BALL_DIAMETER) {
+            ball.y = SCREEN_HEIGHT - BALL_DIAMETER -1;
             ball.setYDir(-ball.yVelocity);
         }
 
         //endregion
         //region Paddle-Ball Collisions
         if (ball.intersects(playerPaddle)) {
+            ball.x = SCREEN_WIDTH - BALL_DIAMETER - PADDLE_WIDTH -1;
             ball.xVelocity *= -1;
             if (ball.xVelocity < 2) {
                 ball.xVelocity *= 2;
@@ -121,10 +135,8 @@ public class GamePanel extends JPanel implements Runnable {
             ball.setYDir(ball.yVelocity);
         }
         if (ball.intersects(comPaddle)) {
-            ball.xVelocity *= -1;
-            if (ball.xVelocity < 2) {
-                ball.xVelocity *= 2;
-            }
+            ball.x = PADDLE_WIDTH +1;
+            ball.xVelocity *= -2;
             if (ball.yVelocity > 0) {
                 ball.yVelocity++;
             } else {
@@ -136,18 +148,26 @@ public class GamePanel extends JPanel implements Runnable {
         }
         //endregion
         //region Goal Collisions
-        if ((ball.x < 0 && ball.y <= SCREEN_HEIGHT / 4) || (ball.x < 0 && ball.y >= SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 4)) {
+        // COM Goal Borders
+        if ((ball.x <= 0 && ball.centerY <= SCREEN_HEIGHT / 4) || (ball.x <= 0 && ball.centerY >= SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 4)) {
+            ball.x = 1;
             ball.setXDir(-ball.xVelocity);
         }
-        if (ball.x < -BALL_DIAMETER / 2 && ball.y >= SCREEN_HEIGHT / 4 && ball.y <= (SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 4)) {
+        // COM Inside Goal
+        // If the ball is within the goalposts and is at least halfway in
+        if (ball.x < -BALL_DIAMETER && ball.centerY >= SCREEN_HEIGHT / 4 && ball.centerY<= (SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 4)) {
             score.player1++;
             newPaddles();
             newBall();
         }
-        if ((ball.x >= SCREEN_WIDTH - BALL_DIAMETER && ball.y <= SCREEN_HEIGHT / 4) || (ball.x >= SCREEN_WIDTH - BALL_DIAMETER && ball.y >= SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 4)) {
+        // PLAYER goal borders
+        if ((ball.x >= SCREEN_WIDTH - (BALL_DIAMETER/2) && ball.centerY <= SCREEN_HEIGHT / 4) || (ball.x >= SCREEN_WIDTH - BALL_DIAMETER && ball.centerY >= SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 4)) {
+            ball.x = SCREEN_WIDTH - BALL_DIAMETER - 1;
             ball.setXDir(-ball.xVelocity);
         }
-        if (ball.x >= SCREEN_WIDTH && ball.y >= SCREEN_HEIGHT / 4 && ball.y <= SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 4) {
+        // PLAYER inside goal
+        // If the ball is within the goalposts and is at least halfway in
+        if (ball.x >= SCREEN_WIDTH + (BALL_DIAMETER/2) && ball.centerY >= SCREEN_HEIGHT / 4 && ball.centerY <= SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 4) {
             score.player2++;
             newPaddles();
             newBall();
@@ -156,14 +176,26 @@ public class GamePanel extends JPanel implements Runnable {
 
     }
 
+
     public void move() {
         playerPaddle.move();
-        comPaddle.move();
+        // Because an AI moving the paddle towards the ball will always win
+        // we have to adjust how the AI can respond to make it interesting.
+        // To do this we limit the AI by checking against a reaction distance
+        // where it can react to the ball coming towards it and move the paddle.
+        if((ball.x - comPaddle.x) <= COM_REACTION_DIST) {
+            comPaddle.move(ball);
+        }
         ball.move();
     }
 
     public class ActionListener extends KeyAdapter {
         public void keyPressed(KeyEvent e) {
+            if(!running){
+                if(e.getKeyCode() == KeyEvent.VK_SPACE){
+                    reset();
+                }
+            }
             playerPaddle.keyPressed(e);
             comPaddle.keyPressed(e);
         }
@@ -181,7 +213,7 @@ public class GamePanel extends JPanel implements Runnable {
         double amountOfTicks = 60;
         double nanoSeconds = 1000000000 / amountOfTicks;
         double delta = 0;
-        while (true) {
+        while (running) {
             long now = System.nanoTime();
             delta += (now - lastTime) / nanoSeconds;
             lastTime = now;
@@ -192,6 +224,5 @@ public class GamePanel extends JPanel implements Runnable {
                 delta--;
             }
         }
-
     }
 }
