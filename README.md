@@ -10,7 +10,7 @@ Currently this works by drawing on top of a JPanel that sits on a JFrame. The ga
 ### Future Improvements?: 
 - [x] First to 10 points Victory Condition.
 - [x] Simple AI controlled paddle
-- [ ] Implement Gameplay Selection (aka 'Player vs AI' or 'PLayer vs Player')
+- [ ] Implement Gameplay Selection (aka 'Player vs AI' or 'Player vs Player')
 - [ ] Possibly Change how the Paddle collision works for TOP and BOTTOM hits
 - [ ] Clean Up code
 ---
