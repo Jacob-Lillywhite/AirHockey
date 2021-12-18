@@ -12,8 +12,3 @@ Currently this works by drawing on top of a JPanel that sits on a JFrame. The ga
 - [x] Implement AI controlled paddle
 - [ ] Implement Gameplay Selection (aka 'Player vs AI' or 'Player vs Player')
 - [ ] Clean Up code
----
-- [ ] Possibly Change how the Paddle collision works for TOP and BOTTOM hits ?
-- I fixed the TOP and BOTTOM collisions from having the puck get stuck inside the paddle and sometimes cause a player to score on themselves
-by forcing the puck outside of the paddle. This makes it so if you hit the puck with the top or bottom of the paddle it acts as a horizontal hit.
-Potentially I might want to change this to a vertical hit as that's what it really is. It currently works, but it could work better!
